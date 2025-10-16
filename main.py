@@ -46,10 +46,90 @@ class GameState:
         if cell in self.board_data.keys():
             self.board_data[cell] = value
 
+    def check_winner(self):
+        WIN_COUNT = 3
+        horiz_sorted_data = sorted(self.board_data.items(), key=lambda item: item[0])
+        vert_sorted_data = sorted(self.board_data.items(), key=lambda item: item[0][1])
+        last_row_letter = ""
+        last_col_number = ""
+        current_hor_count_p1 = 0
+        current_hor_count_p2 = 0
+        current_ver_count_p1 = 0
+        current_ver_count_p2 = 0
+        p1_wins = False
+        p2_wins = False
+        for data_point in horiz_sorted_data:
+            if last_row_letter == "":
+                last_row_letter = data_point[0][0]
+            if last_row_letter != data_point[0][0]:
+                current_hor_count_p1 = 0
+                current_hor_count_p2 = 0
+                last_row_letter = data_point[0][0]
+            if data_point[1] == CellValue.PLAYER1:
+                current_hor_count_p1 += 1
+            if data_point[1] == CellValue.PLAYER2:
+                current_hor_count_p2 += 1
+            if current_hor_count_p1 >= WIN_COUNT:
+                p1_wins = True
+            if current_hor_count_p2 >= WIN_COUNT:
+                p2_wins = True
+
+        for data_point in vert_sorted_data:
+            if last_col_number == "":
+                last_col_number = data_point[0][1]
+            if last_col_number != data_point[0][1]:
+                current_ver_count_p1 = 0
+                current_ver_count_p2 = 0
+                last_col_number = data_point[0][1]
+            if data_point[1] == CellValue.PLAYER1:
+                current_ver_count_p1 += 1
+            if data_point[1] == CellValue.PLAYER2:
+                current_ver_count_p2 += 1
+            if current_ver_count_p1 >= WIN_COUNT:
+                p1_wins = True
+            if current_ver_count_p2 >= WIN_COUNT:
+                p2_wins = True
+        if p1_wins and p2_wins:
+            return "Tie"
+        elif p1_wins:
+            return "Player 1"
+        elif p2_wins:
+            return "Player 2"
+        if CellValue.EMPTY not in self.board_data.values():
+            return "Tie"
+        return ""
+
+
+class ComputerPlayer:
+    def __init__(self, game_state):
+        self.game_state = game_state
+
+    def make_next_move(self):
+        for key, value in self.game_state.board_data.items():
+            if value == CellValue.EMPTY:
+                self.game_state.make_move(key, CellValue.PLAYER2)
+                break
+
+
+class HumanPlayer:
+    def __init__(self, game_state):
+        self.game_state = game_state
+
+    def make_next_move(self):
+        cell = input("Please enter the cell you would like to play on: ")
+        if cell in self.game_state.board_data.keys():
+            self.game_state.make_move(cell, CellValue.PLAYER1)
+
 
 new_game = GameState()
+print("New game started")
 print(new_game)
-new_game.make_move("B2", CellValue.PLAYER1)
-print(new_game)
-new_game.make_move("C1", CellValue.PLAYER2)
-print(new_game)
+human_player = HumanPlayer(new_game)
+computer_player = ComputerPlayer(new_game)
+while new_game.check_winner() == "":
+    human_player.make_next_move()
+    print(new_game)
+    print("Computer is moving")
+    computer_player.make_next_move()
+    print(new_game)
+print(f"Game over, result: {new_game.check_winner()}")
