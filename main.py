@@ -56,6 +56,8 @@ class GameState:
         current_hor_count_p2 = 0
         current_ver_count_p1 = 0
         current_ver_count_p2 = 0
+        current_diag_count_p1 = 0
+        current_diag_count_p2 = 0
         p1_wins = False
         p2_wins = False
         for data_point in horiz_sorted_data:
@@ -89,6 +91,42 @@ class GameState:
                 p1_wins = True
             if current_ver_count_p2 >= WIN_COUNT:
                 p2_wins = True
+
+        vertical_offset = 0
+        for i in range(1, WIN_COUNT + 1):
+            if i > 1:
+                vertical_offset += 1
+            strt_lett = "A"
+            strt_lett = chr(ord(strt_lett) + vertical_offset)
+            index = str(strt_lett) + str(i)
+            if self.board_data[index] == CellValue.PLAYER1:
+                current_diag_count_p1 += 1
+            if self.board_data[index] == CellValue.PLAYER2:
+                current_diag_count_p2 += 1
+            if current_diag_count_p1 >= WIN_COUNT:
+                p1_wins = True
+            if current_diag_count_p2 >= WIN_COUNT:
+                p2_wins = True
+
+        current_diag_count_p1 = 0
+        current_diag_count_p2 = 0
+
+        vertical_offset = 0
+        for i in range(WIN_COUNT, 0, -1):
+            if i < WIN_COUNT:
+                vertical_offset += 1
+            strt_lett = "A"
+            strt_lett = chr(ord(strt_lett) + vertical_offset)
+            index = str(strt_lett) + str(i)
+            if self.board_data[index] == CellValue.PLAYER1:
+                current_diag_count_p1 += 1
+            if self.board_data[index] == CellValue.PLAYER2:
+                current_diag_count_p2 += 1
+            if current_diag_count_p1 >= WIN_COUNT:
+                p1_wins = True
+            if current_diag_count_p2 >= WIN_COUNT:
+                p2_wins = True
+
         if p1_wins and p2_wins:
             return "Tie"
         elif p1_wins:
