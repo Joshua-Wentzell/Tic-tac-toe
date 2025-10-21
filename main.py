@@ -1,4 +1,3 @@
-from collections import Counter
 from enum import Enum
 
 
@@ -34,24 +33,19 @@ class GameState:
 
     def is_winner(self, player: CellValue) -> bool:
         win_length: int = len(self.board)
-        vertical_vals: list = []
         diagonal_count: int = 0
         diagonal_count_2: int = 0
+        for col in range(0, win_length):
+            if all(self.board[row][col] == player for row in range(0, win_length)):
+                return True
         for i, row in enumerate(self.board):
             reversed_index = win_length - 1 - i
             if all(cell == player for cell in row):
                 return True
-            for index, cell in enumerate(row):
-                if cell == player:
-                    vertical_vals.append(index)
             if row[i] == player:
                 diagonal_count += 1
             if row[reversed_index] == player:
                 diagonal_count_2 += 1
-        counts = Counter(vertical_vals)
-        for _, count in counts.items():
-            if count >= win_length:
-                return True
         if diagonal_count >= win_length or diagonal_count_2 >= win_length:
             return True
         return False
