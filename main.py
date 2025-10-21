@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import Enum
 
 
@@ -20,7 +21,7 @@ class GameState:
         return display
 
     def get_board(self) -> list:
-        return self.board
+        return deepcopy(self.board)
 
     def make_move(self, row: int, cell: int, value: CellValue):
         if 0 <= row < len(self.board):
@@ -30,25 +31,6 @@ class GameState:
                 raise ValueError("Invalid cell index")
         else:
             raise ValueError("Invalid row index")
-
-    def is_winner(self, player: CellValue) -> bool:
-        win_length: int = len(self.board)
-        diagonal_count: int = 0
-        diagonal_count_2: int = 0
-        for col in range(0, win_length):
-            if all(self.board[row][col] == player for row in range(0, win_length)):
-                return True
-        for i, row in enumerate(self.board):
-            reversed_index = win_length - 1 - i
-            if all(cell == player for cell in row):
-                return True
-            if row[i] == player:
-                diagonal_count += 1
-            if row[reversed_index] == player:
-                diagonal_count_2 += 1
-        if diagonal_count >= win_length or diagonal_count_2 >= win_length:
-            return True
-        return False
 
 
 class ComputerPlayer:
@@ -82,6 +64,26 @@ class Game:
     def __init__(self):
         self.game_state = GameState()
 
+    def is_winner(self, player: CellValue) -> bool:
+        board = self.game_state.get_board()
+        win_length: int = len(board)
+        diagonal_count: int = 0
+        diagonal_count_2: int = 0
+        for col in range(0, win_length):
+            if all(board[row][col] == player for row in range(0, win_length)):
+                return True
+        for i, row in enumerate(board):
+            reversed_index = win_length - 1 - i
+            if all(cell == player for cell in row):
+                return True
+            if row[i] == player:
+                diagonal_count += 1
+            if row[reversed_index] == player:
+                diagonal_count_2 += 1
+        if diagonal_count >= win_length or diagonal_count_2 >= win_length:
+            return True
+        return False
+
     def play(self):
         print("New game started")
         print(self.game_state.display())
@@ -90,14 +92,14 @@ class Game:
         while True:
             human_player.make_next_move()
             print(self.game_state.display())
-            human_winner = self.game_state.is_winner(CellValue.PLAYER1)
+            human_winner = self.is_winner(CellValue.PLAYER1)
             if human_winner:
                 break
             _ = input("Press enter to continue...")
             print("Computer is moving")
             computer_player.make_next_move()
             print(self.game_state.display())
-            computer_winner = self.game_state.is_winner(CellValue.PLAYER2)
+            computer_winner = self.is_winner(CellValue.PLAYER2)
             if computer_winner:
                 break
         print(f"Game over, winner: {"Player" if human_winner else "Computer"}")
