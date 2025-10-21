@@ -98,7 +98,6 @@ class Game:
             print(self.game_state.display())
             human_winner = self.game_state.is_winner(CellValue.PLAYER1)
             if human_winner:
-                winner = CellValue.PLAYER1
                 break
             _ = input("Press enter to continue...")
             print("Computer is moving")
@@ -106,7 +105,6 @@ class Game:
             print(self.game_state.display())
             computer_winner = self.game_state.is_winner(CellValue.PLAYER2)
             if computer_winner:
-                winner = CellValue.PLAYER2
                 break
         print(f"Game over, winner: {"Player" if human_winner else "Computer"}")
 
