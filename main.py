@@ -84,25 +84,36 @@ class HumanPlayer:
         self.game_state.make_move(col, row, CellValue.PLAYER1)
 
 
-new_game = GameState()
-print("New game started")
-print(new_game.display())
-human_player = HumanPlayer(new_game)
-computer_player = ComputerPlayer(new_game)
-winner = CellValue.EMPTY
-while True:
-    human_player.make_next_move()
-    print(new_game.display())
-    human_winner = new_game.is_winner(CellValue.PLAYER1)
-    if human_winner:
-        winner = CellValue.PLAYER1
-        break
-    _ = input("Press enter to continue...")
-    print("Computer is moving")
-    computer_player.make_next_move()
-    print(new_game.display())
-    computer_winner = new_game.is_winner(CellValue.PLAYER2)
-    if computer_winner:
-        winner = CellValue.PLAYER2
-        break
-print(f"Game over, winner: {str(winner)}")
+class Game:
+    def __init__(self):
+        self.game_state = GameState()
+
+    def play(self):
+        print("New game started")
+        print(self.game_state.display())
+        human_player = HumanPlayer(self.game_state)
+        computer_player = ComputerPlayer(self.game_state)
+        while True:
+            human_player.make_next_move()
+            print(self.game_state.display())
+            human_winner = self.game_state.is_winner(CellValue.PLAYER1)
+            if human_winner:
+                winner = CellValue.PLAYER1
+                break
+            _ = input("Press enter to continue...")
+            print("Computer is moving")
+            computer_player.make_next_move()
+            print(self.game_state.display())
+            computer_winner = self.game_state.is_winner(CellValue.PLAYER2)
+            if computer_winner:
+                winner = CellValue.PLAYER2
+                break
+        print(f"Game over, winner: {str(winner)}")
+
+
+def main():
+    game = Game()
+    game.play()
+    while input("Would you like to play again? (y/n) ") == "y":
+        game = Game()
+        game.play()
