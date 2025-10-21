@@ -15,9 +15,13 @@ class GameState:
     def display(self) -> str:
         display: str = ""
         for row in self.board:
-            display += display.join(f"[{cell.value}]" for cell in row)
+            for cell in row:
+                display += f"[{cell.value}]"
             display += "\n"
         return display
+
+    def get_board(self) -> list:
+        return self.board
 
     def make_move(self, row: int, cell: int, value: CellValue):
         if 0 <= row < len(self.board):
@@ -38,7 +42,7 @@ class GameState:
             if all(cell == player for cell in row):
                 return True
             for index, cell in enumerate(row):
-                if cell.value == player:
+                if cell == player:
                     vertical_vals.append(index)
             if row[i] == player:
                 diagonal_count += 1
@@ -58,10 +62,12 @@ class ComputerPlayer:
         self.game_state = game_state
 
     def make_next_move(self):
-        for key, value in self.game_state.board_data.items():
-            if value == CellValue.EMPTY:
-                self.game_state.make_move(key, CellValue.PLAYER2)
-                break
+        board = self.game_state.get_board()
+        for i, _ in enumerate(board):
+            for j, _ in enumerate(board[i]):
+                if board[i][j] == CellValue.EMPTY:
+                    self.game_state.make_move(i, j, CellValue.PLAYER2)
+                    return
 
 
 class HumanPlayer:
@@ -69,20 +75,34 @@ class HumanPlayer:
         self.game_state = game_state
 
     def make_next_move(self):
-        cell = input("Please enter the cell you would like to play on: ")
-        if cell in self.game_state.board_data.keys():
-            self.game_state.make_move(cell, CellValue.PLAYER1)
+        cell = input(
+            "Please enter the cell you would like to play on in the col,row format: "
+        )
+        col, row = cell.split(",")
+        row = int(row)
+        col = int(col)
+        self.game_state.make_move(col, row, CellValue.PLAYER1)
 
 
 new_game = GameState()
 print("New game started")
-print(new_game)
+print(new_game.display())
 human_player = HumanPlayer(new_game)
 computer_player = ComputerPlayer(new_game)
-while new_game.check_winner() == "":
+winner = CellValue.EMPTY
+while True:
     human_player.make_next_move()
-    print(new_game)
+    print(new_game.display())
+    human_winner = new_game.is_winner(CellValue.PLAYER1)
+    if human_winner:
+        winner = CellValue.PLAYER1
+        break
+    _ = input("Press enter to continue...")
     print("Computer is moving")
     computer_player.make_next_move()
-    print(new_game)
-print(f"Game over, result: {new_game.check_winner()}")
+    print(new_game.display())
+    computer_winner = new_game.is_winner(CellValue.PLAYER2)
+    if computer_winner:
+        winner = CellValue.PLAYER2
+        break
+print(f"Game over, winner: {str(winner)}")
