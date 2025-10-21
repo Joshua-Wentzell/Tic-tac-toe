@@ -108,7 +108,7 @@ class Game:
             if computer_winner:
                 winner = CellValue.PLAYER2
                 break
-        print(f"Game over, winner: {str(winner)}")
+        print(f"Game over, winner: {"Player" if human_winner else "Computer"}")
 
 
 def main():
