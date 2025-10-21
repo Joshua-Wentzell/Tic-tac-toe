@@ -111,7 +111,7 @@ class Game:
         print(f"Game over, winner: {str(winner)}")
 
 
-def main():
+if __name__ == "__main__":
     game = Game()
     game.play()
     while input("Would you like to play again? (y/n) ") == "y":
