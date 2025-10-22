@@ -24,8 +24,12 @@ class GameState:
         return deepcopy(self.board)
 
     def make_move(self, row: int, cell: int, value: CellValue):
+        if value == CellValue.EMPTY:
+            raise ValueError("Cannot assign an empty value")
         if 0 <= row < len(self.board):
             if 0 <= cell < len(self.board[row]):
+                if self.board[row][cell] != CellValue.EMPTY:
+                    raise ValueError(f"Cell {cell} already occupied")
                 self.board[row][cell] = value
             else:
                 raise ValueError("Invalid cell index")
@@ -42,7 +46,10 @@ class ComputerPlayer:
         for i, _ in enumerate(board):
             for j, _ in enumerate(board[i]):
                 if board[i][j] == CellValue.EMPTY:
-                    self.game_state.make_move(i, j, CellValue.PLAYER2)
+                    try:
+                        self.game_state.make_move(i, j, CellValue.PLAYER2)
+                    except Exception as e:
+                        print(e)
                     return
 
 
@@ -52,12 +59,15 @@ class HumanPlayer:
 
     def make_next_move(self):
         cell = input(
-            "Please enter the cell you would like to play on in the col,row format: "
+            "Please enter the cell you would like to play on in the row,col format: "
         )
-        col, row = cell.split(",")
-        row = int(row)
-        col = int(col)
-        self.game_state.make_move(col, row, CellValue.PLAYER1)
+        try:
+            row, col = cell.split(",")
+            row = int(row) - 1
+            col = int(col) - 1
+            self.game_state.make_move(row, col, CellValue.PLAYER1)
+        except Exception as e:
+            print(e)
 
 
 class Game:
@@ -105,7 +115,7 @@ class Game:
         print(f"Game over, winner: {"Player" if human_winner else "Computer"}")
 
 
-def main():
+if __name__ == "__main__":
     game = Game()
     game.play()
     while input("Would you like to play again? (y/n) ") == "y":
