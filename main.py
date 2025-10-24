@@ -41,34 +41,69 @@ class ComputerPlayer:
     def __init__(self, game_state):
         self.game_state = game_state
 
-    def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int) -> tuple[
-        int, bool]:
+    def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int,
+                          blank_spot_row: int, blank_spot_col: int) -> tuple[
+        int, bool, int, int]:
         did_move = False
         if board[row][col] == CellValue.PLAYER1:
             current_num += 1
-        if current_num == critical_num and board[row][col] == CellValue.EMPTY:
+        if board[row][col] == CellValue.EMPTY:
+            blank_spot_row = row
+            blank_spot_col = col
+        if current_num == critical_num and blank_spot_col != -1 and blank_spot_row != -1:
             try:
-                self.game_state.make_move(row, col, CellValue.PLAYER2)
+                self.game_state.make_move(blank_spot_row, blank_spot_col, CellValue.PLAYER2)
                 did_move = True
             except Exception as e:
                 print(e)
-        return current_num, did_move
+        return current_num, did_move, blank_spot_row, blank_spot_col
 
     def make_next_move(self):
         board = self.game_state.get_board()
         critical_num = len(board) - 1
-        for i, _ in enumerate(board):
+        diagonal_count: int = 0
+        diagonal_count_2: int = 0
+        diagonal_blank: int = -1
+        diagonal_blank_2: int = -1
+        for i, row in enumerate(board):
+            reversed_index = critical_num - i
+            if row[i] == CellValue.PLAYER1:
+                diagonal_count += 1
+            elif row[i] == CellValue.EMPTY:
+                diagonal_blank = i
+            if row[reversed_index] == CellValue.PLAYER1:
+                diagonal_count_2 += 1
+            elif row[reversed_index] == CellValue.EMPTY:
+                diagonal_blank_2 = reversed_index
             current_num = 0
+            blank_spot_row = -1
+            blank_spot_col = -1
             for j, _ in enumerate(board[i]):
-                current_num, did_move = self._move_if_critical(board, i, j, critical_num, current_num)
+                current_num, did_move, blank_spot_row, blank_spot_col = self._move_if_critical(board, i, j,
+                                                                                               critical_num,
+                                                                                               current_num,
+                                                                                               blank_spot_row,
+                                                                                               blank_spot_col)
                 if did_move:
                     return
         for j in range(critical_num + 1):
             current_num = 0
+            blank_spot_row = -1
+            blank_spot_col = -1
             for i in range(critical_num + 1):
-                current_num, did_move = self._move_if_critical(board, i, j, critical_num, current_num)
+                current_num, did_move, blank_spot_row, blank_spot_col = self._move_if_critical(board, i, j,
+                                                                                               critical_num,
+                                                                                               current_num,
+                                                                                               blank_spot_row,
+                                                                                               blank_spot_col)
                 if did_move:
                     return
+        if diagonal_count == critical_num and diagonal_blank != -1:
+            self.game_state.make_move(diagonal_blank, diagonal_blank, CellValue.PLAYER2)
+            return
+        if diagonal_count_2 == critical_num and diagonal_blank_2 != -1:
+            self.game_state.make_move(diagonal_blank_2, diagonal_blank_2, CellValue.PLAYER2)
+            return
 
 
 class HumanPlayer:
