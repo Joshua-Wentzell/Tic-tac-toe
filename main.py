@@ -41,15 +41,33 @@ class ComputerPlayer:
     def __init__(self, game_state):
         self.game_state = game_state
 
+    def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int) -> tuple[
+        int, bool]:
+        did_move = False
+        if board[row][col] == CellValue.PLAYER1:
+            current_num += 1
+        if current_num == critical_num and board[row][col] == CellValue.EMPTY:
+            try:
+                self.game_state.make_move(row, col, CellValue.PLAYER2)
+                did_move = True
+            except Exception as e:
+                print(e)
+        return current_num, did_move
+
     def make_next_move(self):
         board = self.game_state.get_board()
+        critical_num = len(board) - 1
         for i, _ in enumerate(board):
+            current_num = 0
             for j, _ in enumerate(board[i]):
-                if board[i][j] == CellValue.EMPTY:
-                    try:
-                        self.game_state.make_move(i, j, CellValue.PLAYER2)
-                    except Exception as e:
-                        print(e)
+                current_num, did_move = self._move_if_critical(board, i, j, critical_num, current_num)
+                if did_move:
+                    return
+        for j in range(critical_num + 1):
+            current_num = 0
+            for i in range(critical_num + 1):
+                current_num, did_move = self._move_if_critical(board, i, j, critical_num, current_num)
+                if did_move:
                     return
 
 
