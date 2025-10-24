@@ -104,6 +104,11 @@ class ComputerPlayer:
         if diagonal_count_2 == critical_num and diagonal_blank_2 != -1:
             self.game_state.make_move(diagonal_blank_2, diagonal_blank_2, CellValue.PLAYER2)
             return
+        for i, _ in enumerate(board):
+            for j, _ in enumerate(board[i]):
+                if board[i][j] == CellValue.EMPTY:
+                    self.game_state.make_move(i, j, CellValue.PLAYER2)
+                    return
 
 
 class HumanPlayer:
