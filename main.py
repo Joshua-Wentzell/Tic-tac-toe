@@ -41,7 +41,7 @@ class ComputerPlayer:
     def __init__(self, game_state):
         self.game_state = game_state
 
-    def _block_player_from_win(self, board: list):
+    def _block_player_from_win(self, board: list) -> bool:
         critical_num = len(board) - 1
         diagonal_count: int = 0
         diagonal_count_2: int = 0
@@ -66,7 +66,8 @@ class ComputerPlayer:
                                                                                                current_num,
                                                                                                blank_spot_row,
                                                                                                blank_spot_col)
-                return did_move
+                if did_move:
+                    return True
         for j in range(critical_num + 1):
             current_num = 0
             blank_spot_row = -1
@@ -77,7 +78,8 @@ class ComputerPlayer:
                                                                                                current_num,
                                                                                                blank_spot_row,
                                                                                                blank_spot_col)
-                return did_move
+                if did_move:
+                    return True
         if diagonal_count == critical_num and diagonal_blank != -1:
             self.game_state.make_move(diagonal_blank, diagonal_blank, CellValue.PLAYER2)
             return True
@@ -103,7 +105,57 @@ class ComputerPlayer:
                 print(e)
         return current_num, did_move, blank_spot_row, blank_spot_col
 
-    def _move_next_blank_spot(self, board: list):
+    def _continue_longest_chain(self, board: list) -> bool:
+        length: int = len(board)
+        longest_candidates = []
+        diagonal_count: int = 0
+        diagonal_count_2: int = 0
+        diagonal_blank: tuple[int, int] | None = None
+        diagonal_blank_2: tuple[int, int] | None = None
+        for i, row in enumerate(board):
+            reversed_index = length - 1 - i
+            this_row_cnt: int = 0
+            if row[i] == CellValue.PLAYER2:
+                diagonal_count += 1
+            elif row[i] == CellValue.EMPTY:
+                diagonal_blank = (i, i)
+            if row[reversed_index] == CellValue.PLAYER2:
+                diagonal_count_2 += 1
+            elif row[reversed_index] == CellValue.EMPTY:
+                diagonal_blank_2 = (i, reversed_index)
+            empty_spot: tuple[int, int] | None = None
+            for j, _ in enumerate(board[i]):
+                if board[i][j] == CellValue.PLAYER1:
+                    this_row_cnt = 0
+                    break
+                elif board[i][j] == CellValue.PLAYER2:
+                    this_row_cnt += 1
+                elif board[i][j] == CellValue.EMPTY:
+                    empty_spot = (i, j)
+            longest_candidates.append((this_row_cnt, empty_spot))
+        for j in range(length):
+            this_col_cnt: int = 0
+            empty_spot: tuple[int, int] | None = None
+            for i, _ in enumerate(board):
+                if board[i][j] == CellValue.PLAYER1:
+                    this_col_cnt = 0
+                    break
+                elif board[i][j] == CellValue.PLAYER2:
+                    this_col_cnt += 1
+                elif board[i][j] == CellValue.EMPTY:
+                    empty_spot = (i, j)
+            longest_candidates.append((this_col_cnt, empty_spot))
+        longest_candidates.append((diagonal_count, diagonal_blank))
+        longest_candidates.append((diagonal_count_2, diagonal_blank_2))
+        longest_candidates = [item for item in longest_candidates if item[1] is not None and item[0] > 0]
+        chosen_candidate: tuple[int, tuple[int, int]] | None = None
+        chosen_candidate = max(longest_candidates, key=lambda x: x[0], default=None)
+        if chosen_candidate is None:
+            return False
+        self.game_state.make_move(chosen_candidate[1][0], chosen_candidate[1][1], CellValue.PLAYER2)
+        return True
+
+    def _move_next_blank_spot(self, board: list) -> bool:
         for i, _ in enumerate(board):
             for j, _ in enumerate(board[i]):
                 if board[i][j] == CellValue.EMPTY:
@@ -113,8 +165,10 @@ class ComputerPlayer:
 
     def make_next_move(self):
         board = self.game_state.get_board()
-        has_moved = False
         has_moved = self._block_player_from_win(board)
+        if has_moved:
+            return
+        has_moved = self._continue_longest_chain(board)
         if has_moved:
             return
         has_moved = self._move_next_blank_spot(board)
