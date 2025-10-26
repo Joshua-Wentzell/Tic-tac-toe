@@ -66,8 +66,7 @@ class ComputerPlayer:
                                                                                                current_num,
                                                                                                blank_spot_row,
                                                                                                blank_spot_col)
-                if did_move:
-                    return
+                return did_move
         for j in range(critical_num + 1):
             current_num = 0
             blank_spot_row = -1
@@ -78,14 +77,14 @@ class ComputerPlayer:
                                                                                                current_num,
                                                                                                blank_spot_row,
                                                                                                blank_spot_col)
-                if did_move:
-                    return
+                return did_move
         if diagonal_count == critical_num and diagonal_blank != -1:
             self.game_state.make_move(diagonal_blank, diagonal_blank, CellValue.PLAYER2)
-            return
+            return True
         if diagonal_count_2 == critical_num and diagonal_blank_2 != -1:
             self.game_state.make_move(diagonal_blank_2, diagonal_blank_2, CellValue.PLAYER2)
-            return
+            return True
+        return False
 
     def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int,
                           blank_spot_row: int, blank_spot_col: int) -> tuple[
@@ -104,14 +103,23 @@ class ComputerPlayer:
                 print(e)
         return current_num, did_move, blank_spot_row, blank_spot_col
 
-    def make_next_move(self):
-        board = self.game_state.get_board()
-        self._block_player_from_win(board)
+    def _move_next_blank_spot(self, board: list):
         for i, _ in enumerate(board):
             for j, _ in enumerate(board[i]):
                 if board[i][j] == CellValue.EMPTY:
                     self.game_state.make_move(i, j, CellValue.PLAYER2)
-                    return
+                    return True
+        return False
+
+    def make_next_move(self):
+        board = self.game_state.get_board()
+        has_moved = False
+        has_moved = self._block_player_from_win(board)
+        if has_moved:
+            return
+        has_moved = self._move_next_blank_spot(board)
+        if has_moved:
+            return
 
 
 class HumanPlayer:
