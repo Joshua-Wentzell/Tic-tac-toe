@@ -148,7 +148,6 @@ class ComputerPlayer:
         longest_candidates.append((diagonal_count, diagonal_blank))
         longest_candidates.append((diagonal_count_2, diagonal_blank_2))
         longest_candidates = [item for item in longest_candidates if item[1] is not None and item[0] > 0]
-        chosen_candidate: tuple[int, tuple[int, int]] | None = None
         chosen_candidate = max(longest_candidates, key=lambda x: x[0], default=None)
         if chosen_candidate is None:
             return False
