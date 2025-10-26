@@ -41,25 +41,7 @@ class ComputerPlayer:
     def __init__(self, game_state):
         self.game_state = game_state
 
-    def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int,
-                          blank_spot_row: int, blank_spot_col: int) -> tuple[
-        int, bool, int, int]:
-        did_move = False
-        if board[row][col] == CellValue.PLAYER1:
-            current_num += 1
-        if board[row][col] == CellValue.EMPTY:
-            blank_spot_row = row
-            blank_spot_col = col
-        if current_num == critical_num and blank_spot_col != -1 and blank_spot_row != -1:
-            try:
-                self.game_state.make_move(blank_spot_row, blank_spot_col, CellValue.PLAYER2)
-                did_move = True
-            except Exception as e:
-                print(e)
-        return current_num, did_move, blank_spot_row, blank_spot_col
-
-    def make_next_move(self):
-        board = self.game_state.get_board()
+    def _block_player_from_win(self, board: list):
         critical_num = len(board) - 1
         diagonal_count: int = 0
         diagonal_count_2: int = 0
@@ -104,6 +86,27 @@ class ComputerPlayer:
         if diagonal_count_2 == critical_num and diagonal_blank_2 != -1:
             self.game_state.make_move(diagonal_blank_2, diagonal_blank_2, CellValue.PLAYER2)
             return
+
+    def _move_if_critical(self, board: list, row: int, col: int, critical_num: int, current_num: int,
+                          blank_spot_row: int, blank_spot_col: int) -> tuple[
+        int, bool, int, int]:
+        did_move = False
+        if board[row][col] == CellValue.PLAYER1:
+            current_num += 1
+        if board[row][col] == CellValue.EMPTY:
+            blank_spot_row = row
+            blank_spot_col = col
+        if current_num == critical_num and blank_spot_col != -1 and blank_spot_row != -1:
+            try:
+                self.game_state.make_move(blank_spot_row, blank_spot_col, CellValue.PLAYER2)
+                did_move = True
+            except Exception as e:
+                print(e)
+        return current_num, did_move, blank_spot_row, blank_spot_col
+
+    def make_next_move(self):
+        board = self.game_state.get_board()
+        self._block_player_from_win(board)
         for i, _ in enumerate(board):
             for j, _ in enumerate(board[i]):
                 if board[i][j] == CellValue.EMPTY:
