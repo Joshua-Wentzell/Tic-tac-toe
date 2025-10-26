@@ -163,24 +163,25 @@ class ComputerPlayer:
                     return True
         return False
 
-    def make_next_move(self):
+    def make_next_move(self) -> bool:
         board = self.game_state.get_board()
         has_moved = self._block_player_from_win(board)
         if has_moved:
-            return
+            return True
         has_moved = self._continue_longest_chain(board)
         if has_moved:
-            return
+            return True
         has_moved = self._move_next_blank_spot(board)
         if has_moved:
-            return
+            return True
+        return False
 
 
 class HumanPlayer:
     def __init__(self, game_state):
         self.game_state = game_state
 
-    def make_next_move(self):
+    def make_next_move(self) -> bool:
         cell = input(
             "Please enter the cell you would like to play on in the row,col format: "
         )
@@ -189,8 +190,10 @@ class HumanPlayer:
             row = int(row) - 1
             col = int(col) - 1
             self.game_state.make_move(row, col, CellValue.PLAYER1)
+            return True
         except Exception as e:
             print(e)
+            return False
 
 
 class Game:
@@ -223,7 +226,9 @@ class Game:
         human_player = HumanPlayer(self.game_state)
         computer_player = ComputerPlayer(self.game_state)
         while True:
-            human_player.make_next_move()
+            successful_move = human_player.make_next_move()
+            while not successful_move:
+                successful_move = human_player.make_next_move()
             print(self.game_state.display())
             human_winner = self.is_winner(CellValue.PLAYER1)
             if human_winner:
